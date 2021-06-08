@@ -16,20 +16,20 @@
  */
 package io.github.bonigarcia;
 
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.atLeast;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.Answers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.mockito.junit.jupiter.MockitoSettings;
+import org.mockito.quality.Strictness;
+
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class LoginServiceTest {
@@ -40,20 +40,20 @@ class LoginServiceTest {
     @Mock
     LoginRepository loginRepository;
 
-    UserForm userForm = new UserForm("foo", "bar");
+    private UserForm userForm = new UserForm("foo", "bar");
 
     @Test
     void testLoginOk() {
         when(loginRepository.login(any(UserForm.class))).thenReturn(true);
         assertTrue(loginService.login(userForm));
-        verify(loginRepository, atLeast(1)).login(userForm);
+        verify(loginRepository).login(userForm);
     }
 
     @Test
     void testLoginKo() {
         when(loginRepository.login(any(UserForm.class))).thenReturn(false);
         assertFalse(loginService.login(userForm));
-        verify(loginRepository, times(1)).login(userForm);
+        verify(loginRepository).login(userForm);
     }
 
     @Test
@@ -65,4 +65,52 @@ class LoginServiceTest {
         });
     }
 
+//    @Test
+//    void testLoginFailedTwiceAndSucceed() {
+//        when(loginRepository.login(userForm)).thenReturn(false);
+//        assertFalse(loginService.login(userForm));
+//        assertFalse(loginService.login(userForm));
+//
+//        when(loginRepository.login(userForm)).thenReturn(true);
+//        loginService.login(userForm);
+//        verify(loginRepository,times(3)).login(userForm);
+//    }
+
+    @ExtendWith(MockitoExtension.class)
+    @Nested
+    @MockitoSettings(strictness = Strictness.LENIENT)
+    class AccountLockTest {
+
+        @Mock
+        LoginLockManager loginLockManager;
+
+//        @Mock
+//        LoginRepository loginRepository;
+
+        @Spy
+        LoginRepository loginRepository;
+
+        @Spy
+        LoginService loginService;
+
+        @Test
+        void testAccountLocked() {
+            UserForm userForm = new UserForm("user1", "bar");
+            when(loginLockManager.isLocked(any(String.class))).thenReturn(true);
+//            assertThrows(LoginException.class, () -> {
+//                loginRepository.login(userForm);
+//            });
+            //when(loginRepository.matchAccount(userForm.username,userForm.password)).thenReturn(true);
+            assertFalse(loginService.login(userForm));
+        }
+
+//        @Test
+//        void testAccountUnLocked() {
+//            UserForm userForm = new UserForm("user1", "bar");
+//            when(loginLockManager.isLocked(userForm.username)).thenReturn(false);
+//            when(loginRepository.matchAccount(userForm.username,userForm.password)).thenReturn(false);
+//            assertFalse(loginService.login(userForm));
+//            verify(loginLockManager,times(1)).failed(userForm.username);
+//        }
+    }
 }

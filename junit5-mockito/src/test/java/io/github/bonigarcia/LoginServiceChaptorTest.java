@@ -17,6 +17,7 @@
 package io.github.bonigarcia;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import org.junit.jupiter.api.Test;
@@ -40,12 +41,14 @@ class LoginServiceChaptorTest {
     ArgumentCaptor<UserForm> argCaptor;
 
     UserForm userForm = new UserForm("foo", "bar");
+    UserForm userForm2 = new UserForm("user1", "p1");
 
     @Test
     void testArgumentCaptor() {
         loginService.login(userForm);
-        verify(loginRepository).login(argCaptor.capture());
-        assertEquals(userForm, argCaptor.getValue());
+        loginService.login(userForm2);
+        verify(loginRepository,times(2)).login(argCaptor.capture());
+        assertEquals(userForm2, argCaptor.getValue());
     }
 
 }
