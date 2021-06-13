@@ -30,16 +30,14 @@ public class LoginLockManager {
     private static final Logger log = getLogger(lookup().lookupClass());
 
     private Map<String, Integer> usersLockedInfo;
-    private Map<String, String> users;
 
-    public LoginLockManager(Map<String, String> users) {
-        this.users = new HashMap<>();
+    public LoginLockManager() {
         this.usersLockedInfo = new HashMap<>();
     }
 
     public void failed(String username) {
+        log.debug("LoginLockManager.failed {}", username);
         if (usersLockedInfo.containsKey(username)) {
-            log.debug("LoginLockManager.login {}", username);
             usersLockedInfo.replace(username, usersLockedInfo.get(username) + 1);
         } else {
             usersLockedInfo.put(username, 1);
@@ -48,14 +46,11 @@ public class LoginLockManager {
 
     public boolean isLocked(String username) {
         if (usersLockedInfo.containsKey(username)) {
-            return usersLockedInfo.get(username) >= MAX_FAILED_TIME;
+            boolean locked = usersLockedInfo.get(username) >= MAX_FAILED_TIME;
+            log.debug("LoginLockManager.isLocked {} {}", username,locked);
+            return locked;
         } else {
             return false;
         }
-    }
-
-    boolean matchAccount(String username,String password) {
-        return users.keySet().contains(username)
-                && users.get(username).equals(password);
     }
 }

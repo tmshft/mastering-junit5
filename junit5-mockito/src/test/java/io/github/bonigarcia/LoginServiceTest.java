@@ -16,13 +16,11 @@
  */
 package io.github.bonigarcia;
 
-import org.junit.jupiter.api.Nested;
+import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
-import org.mockito.Answers;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.mockito.junit.jupiter.MockitoSettings;
 import org.mockito.quality.Strictness;
@@ -32,6 +30,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+@MockitoSettings(strictness = Strictness.LENIENT)
 class LoginServiceTest {
 
     @InjectMocks
@@ -40,77 +39,59 @@ class LoginServiceTest {
     @Mock
     LoginRepository loginRepository;
 
+    @Mock
+    LoginLockManager loginLockManager;
+
     private UserForm userForm = new UserForm("foo", "bar");
 
     @Test
-    void testLoginOk() {
+    @DisplayName("アンロック／ユーザ情報が有効")
+    void testAccountUnLockedValidAccount() {
         when(loginRepository.login(any(UserForm.class))).thenReturn(true);
+        when(loginLockManager.isLocked(any(String.class))).thenReturn(false);
         assertTrue(loginService.login(userForm));
-        verify(loginRepository).login(userForm);
+        verify(loginLockManager).isLocked(userForm.username);
+        verify(loginLockManager, times(0)).failed(userForm.username);
     }
 
     @Test
-    void testLoginKo() {
+    @DisplayName("アンロック／ユーザ情報が無効")
+    void testAccountUnLockedInvalidAccount() {
         when(loginRepository.login(any(UserForm.class))).thenReturn(false);
+        when(loginLockManager.isLocked(any(String.class))).thenReturn(false);
         assertFalse(loginService.login(userForm));
-        verify(loginRepository).login(userForm);
+        verify(loginLockManager).isLocked(userForm.username);
+        verify(loginLockManager).failed(userForm.username);
     }
 
+    @Test
+    @DisplayName("ロック／ユーザ情報が有効")
+    void testAccountLockedValidAccount() {
+        when(loginRepository.login(any(UserForm.class))).thenReturn(true);
+        when(loginLockManager.isLocked(any(String.class))).thenReturn(true);
+        assertThrows(LoginException.class, () -> loginService.login(userForm));
+        verify(loginLockManager).isLocked(userForm.username);
+        verify(loginLockManager, times(0)).failed(userForm.username);
+    }
+
+    @Test
+    @DisplayName("ロック／ユーザ情報が無効")
+    void testAccountLockedInvalidAccount() {
+        when(loginRepository.login(any(UserForm.class))).thenReturn(false);
+        when(loginLockManager.isLocked(any(String.class))).thenReturn(true);
+        assertThrows(LoginException.class, () -> loginService.login(userForm));
+        verify(loginLockManager).isLocked(userForm.username);
+        verify(loginLockManager, times(0)).failed(userForm.username);
+    }
+
+    @DisplayName("2重ログイン")
     @Test
     void testLoginTwice() {
         when(loginRepository.login(userForm)).thenReturn(true);
+        when(loginLockManager.isLocked(any(String.class))).thenReturn(false);
         assertThrows(LoginException.class, () -> {
             loginService.login(userForm);
             loginService.login(userForm);
         });
-    }
-
-//    @Test
-//    void testLoginFailedTwiceAndSucceed() {
-//        when(loginRepository.login(userForm)).thenReturn(false);
-//        assertFalse(loginService.login(userForm));
-//        assertFalse(loginService.login(userForm));
-//
-//        when(loginRepository.login(userForm)).thenReturn(true);
-//        loginService.login(userForm);
-//        verify(loginRepository,times(3)).login(userForm);
-//    }
-
-    @ExtendWith(MockitoExtension.class)
-    @Nested
-    @MockitoSettings(strictness = Strictness.LENIENT)
-    class AccountLockTest {
-
-        @Mock
-        LoginLockManager loginLockManager;
-
-//        @Mock
-//        LoginRepository loginRepository;
-
-        @Spy
-        LoginRepository loginRepository;
-
-        @Spy
-        LoginService loginService;
-
-        @Test
-        void testAccountLocked() {
-            UserForm userForm = new UserForm("user1", "bar");
-            when(loginLockManager.isLocked(any(String.class))).thenReturn(true);
-//            assertThrows(LoginException.class, () -> {
-//                loginRepository.login(userForm);
-//            });
-            //when(loginRepository.matchAccount(userForm.username,userForm.password)).thenReturn(true);
-            assertFalse(loginService.login(userForm));
-        }
-
-//        @Test
-//        void testAccountUnLocked() {
-//            UserForm userForm = new UserForm("user1", "bar");
-//            when(loginLockManager.isLocked(userForm.username)).thenReturn(false);
-//            when(loginRepository.matchAccount(userForm.username,userForm.password)).thenReturn(false);
-//            assertFalse(loginService.login(userForm));
-//            verify(loginLockManager,times(1)).failed(userForm.username);
-//        }
     }
 }

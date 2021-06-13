@@ -16,21 +16,20 @@
  */
 package io.github.bonigarcia;
 
-import static java.lang.invoke.MethodHandles.lookup;
-import static org.slf4j.LoggerFactory.getLogger;
+import org.slf4j.Logger;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
-import org.slf4j.Logger;
+import static java.lang.invoke.MethodHandles.lookup;
+import static org.slf4j.LoggerFactory.getLogger;
 
 public class LoginService {
 
     static final Logger log = getLogger(lookup().lookupClass());
 
     private LoginRepository loginRepository = new LoginRepository();
+    private LoginLockManager loginLockManager = new LoginLockManager();
     private List<String> usersLogged = new ArrayList<>();
 
     public boolean login(UserForm userForm) {
@@ -45,10 +44,17 @@ public class LoginService {
             throw new LoginException(username + " already logged");
         }
 
+        // locked user cannnot be logged.
+        if (loginLockManager.isLocked(username)) {
+            throw new LoginException(username + " account locked");
+        }
+
         // Call to repository to make logic
         boolean login = loginRepository.login(userForm);
         if (login) {
             usersLogged.add(username);
+        } else {
+            loginLockManager.failed(username);
         }
         return login;
     }

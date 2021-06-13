@@ -27,8 +27,6 @@ import org.slf4j.Logger;
 public class LoginRepository {
 
     static final Logger log = getLogger(lookup().lookupClass());
-    private LoginLockManager loginLockManager;
-
     Map<String, String> users;
 
     public LoginRepository() {
@@ -38,8 +36,6 @@ public class LoginRepository {
         users.put("user1", "p1");
         users.put("user2", "p3");
         users.put("user3", "p4");
-
-        loginLockManager = new LoginLockManager(users);
     }
 
     public boolean login(UserForm userForm) {
@@ -48,16 +44,11 @@ public class LoginRepository {
         String username = userForm.getUsername();
         String password = userForm.getPassword();
 
-        if (loginLockManager.isLocked(username)) {
-            throw new LoginException(username + " locked account");
-        } else {
-            if (loginLockManager.matchAccount(username, password)) {
-                return true;
-            } else {
-                loginLockManager.failed(username);
-                return false;
-            }
-        }
+        return matchAccount(username, password);
+    }
 
+    private boolean matchAccount(String username,String password) {
+        return users.containsKey(username)
+                && users.get(username).equals(password);
     }
 }

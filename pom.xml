@@ -10,7 +10,6 @@
 
     <modules>
         <module>junit5-mockito</module>
-        <module>junit5-spring-boot-web</module>
     </modules>
 
 </project>
