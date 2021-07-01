@@ -25,8 +25,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class LoginServiceTest {
@@ -56,8 +55,6 @@ class LoginServiceTest {
         when(loginRepository.login(any(UserForm.class))).thenReturn(false);
         when(loginLockManager.isLocked(any(String.class))).thenReturn(false);
         assertFalse(loginService.login(userForm));
-        verify(loginLockManager).isLocked(userForm.username);
-        verify(loginLockManager).failed(userForm.username);
     }
 
     @Test
@@ -65,6 +62,8 @@ class LoginServiceTest {
     void testAccountLockedValidAccount() {
         when(loginLockManager.isLocked(any(String.class))).thenReturn(true);
         assertThrows(LoginException.class, () -> loginService.login(userForm));
+        verify(loginLockManager).isLocked(userForm.username);
+        verifyNoInteractions(loginRepository);
     }
 
     @Test
@@ -72,6 +71,8 @@ class LoginServiceTest {
     void testAccountLockedInvalidAccount() {
         when(loginLockManager.isLocked(any(String.class))).thenReturn(true);
         assertThrows(LoginException.class, () -> loginService.login(userForm));
+        verify(loginLockManager).isLocked(userForm.username);
+        verifyNoInteractions(loginRepository);
     }
 
     @Test
@@ -83,5 +84,8 @@ class LoginServiceTest {
             loginService.login(userForm);
             loginService.login(userForm);
         });
+        verify(loginRepository).login(userForm);
+        verify(loginLockManager).isLocked(userForm.username);
+        verify(loginLockManager,times(0)).failed(userForm.username);
     }
 }
