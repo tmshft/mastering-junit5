@@ -74,10 +74,6 @@ public class LoginService {
         usersLogged.remove(username);
     }
 
-    public int getUserLoggedCount() {
-        return usersLogged.size();
-    }
-
     private void checkForm(UserForm userForm) {
         assert userForm != null;
         assert userForm.getUsername() != null;
