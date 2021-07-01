@@ -36,16 +36,12 @@ class LoginServiceWithoutMock {
     @Test
     @DisplayName("アンロック／ユーザ情報が有効")
     void testAccountUnLockedValidAccount() {
-        assertFalse(loginService.login(userKo));
-        assertFalse(loginService.login(userKo));
         assertTrue(loginService.login(userOk));
     }
 
     @Test
     @DisplayName("アンロック／ユーザ情報が無効")
     void testAccountUnLockedInvalidAccount() {
-        assertFalse(loginService.login(userKo));
-        assertFalse(loginService.login(userKo));
         assertFalse(loginService.login(userKo));
     }
 
