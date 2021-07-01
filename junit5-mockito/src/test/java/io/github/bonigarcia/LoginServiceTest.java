@@ -22,15 +22,13 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.mockito.junit.jupiter.MockitoSettings;
-import org.mockito.quality.Strictness;
 
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-@MockitoSettings(strictness = Strictness.LENIENT)
 class LoginServiceTest {
 
     @InjectMocks
@@ -50,8 +48,6 @@ class LoginServiceTest {
         when(loginRepository.login(any(UserForm.class))).thenReturn(true);
         when(loginLockManager.isLocked(any(String.class))).thenReturn(false);
         assertTrue(loginService.login(userForm));
-        verify(loginLockManager).isLocked(userForm.username);
-        verify(loginLockManager, times(0)).failed(userForm.username);
     }
 
     @Test
@@ -67,25 +63,19 @@ class LoginServiceTest {
     @Test
     @DisplayName("ロック／ユーザ情報が有効")
     void testAccountLockedValidAccount() {
-        when(loginRepository.login(any(UserForm.class))).thenReturn(true);
         when(loginLockManager.isLocked(any(String.class))).thenReturn(true);
         assertThrows(LoginException.class, () -> loginService.login(userForm));
-        verify(loginLockManager).isLocked(userForm.username);
-        verify(loginLockManager, times(0)).failed(userForm.username);
     }
 
     @Test
     @DisplayName("ロック／ユーザ情報が無効")
     void testAccountLockedInvalidAccount() {
-        when(loginRepository.login(any(UserForm.class))).thenReturn(false);
         when(loginLockManager.isLocked(any(String.class))).thenReturn(true);
         assertThrows(LoginException.class, () -> loginService.login(userForm));
-        verify(loginLockManager).isLocked(userForm.username);
-        verify(loginLockManager, times(0)).failed(userForm.username);
     }
 
-    @DisplayName("2重ログイン")
     @Test
+    @DisplayName("2重ログイン")
     void testLoginTwice() {
         when(loginRepository.login(userForm)).thenReturn(true);
         when(loginLockManager.isLocked(any(String.class))).thenReturn(false);
