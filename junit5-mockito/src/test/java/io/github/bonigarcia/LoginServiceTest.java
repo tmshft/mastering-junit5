@@ -30,62 +30,28 @@ import static org.mockito.Mockito.*;
 @ExtendWith(MockitoExtension.class)
 class LoginServiceTest {
 
-    @InjectMocks
-    LoginService loginService;
+//    @Test
+//    @DisplayName("アンロック／ユーザ情報が有効")
+//    void testAccountUnLockedValidAccount() {
+//    }
 
-    @Mock
-    LoginRepository loginRepository;
+//    @Test
+//    @DisplayName("アンロック／ユーザ情報が無効")
+//    void testAccountUnLockedInvalidAccount() {
+//    }
 
-    @Mock
-    LoginLockManager loginLockManager;
+//    @Test
+//    @DisplayName("ロック／ユーザ情報が有効")
+//    void testAccountLockedValidAccount() {
+//    }
 
-    private UserForm userForm = new UserForm("foo", "bar");
+//    @Test
+//    @DisplayName("ロック／ユーザ情報が無効")
+//    void testAccountLockedInvalidAccount() {
+//    }
 
-    @Test
-    @DisplayName("アンロック／ユーザ情報が有効")
-    void testAccountUnLockedValidAccount() {
-        when(loginRepository.login(any(UserForm.class))).thenReturn(true);
-        when(loginLockManager.isLocked(any(String.class))).thenReturn(false);
-        assertTrue(loginService.login(userForm));
-    }
-
-    @Test
-    @DisplayName("アンロック／ユーザ情報が無効")
-    void testAccountUnLockedInvalidAccount() {
-        when(loginRepository.login(any(UserForm.class))).thenReturn(false);
-        when(loginLockManager.isLocked(any(String.class))).thenReturn(false);
-        assertFalse(loginService.login(userForm));
-    }
-
-    @Test
-    @DisplayName("ロック／ユーザ情報が有効")
-    void testAccountLockedValidAccount() {
-        when(loginLockManager.isLocked(any(String.class))).thenReturn(true);
-        assertThrows(LoginException.class, () -> loginService.login(userForm));
-        verify(loginLockManager).isLocked(userForm.username);
-        verifyNoInteractions(loginRepository);
-    }
-
-    @Test
-    @DisplayName("ロック／ユーザ情報が無効")
-    void testAccountLockedInvalidAccount() {
-        when(loginLockManager.isLocked(any(String.class))).thenReturn(true);
-        assertThrows(LoginException.class, () -> loginService.login(userForm));
-        verify(loginLockManager).isLocked(userForm.username);
-        verifyNoInteractions(loginRepository);
-    }
-
-    @Test
-    @DisplayName("2重ログイン")
-    void testLoginTwice() {
-        when(loginRepository.login(userForm)).thenReturn(true);
-        when(loginLockManager.isLocked(any(String.class))).thenReturn(false);
-        assertThrows(LoginException.class, () -> {
-            loginService.login(userForm);
-            loginService.login(userForm);
-        });
-        verify(loginRepository).login(userForm);
-        verify(loginLockManager).isLocked(userForm.username);
-        verify(loginLockManager,times(0)).failed(userForm.username);
-    }
+//    @Test
+//    @DisplayName("2重ログイン")
+//    void testLoginTwice() {
+//   }
 }
