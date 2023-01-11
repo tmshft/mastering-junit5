@@ -7,7 +7,7 @@ ext {
     logbackVersion  = '1.2.3'
     springVersion = '5.3.7'
 
-    junitJupiterVersion = '5.7.2'
+    junitJupiterVersion = '5.9.2'
 }
 
 apply plugin: 'java'
